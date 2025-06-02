@@ -8,7 +8,7 @@ return {
         enabled = true,
         auto_trigger = true,
         keymap = {
-          accept = "<Tab>",      -- 我们重写，不用原生处理
+          accept = "<Tab>",      -- use <Tab> instead of <C-l>
           accept_word = false,
           accept_line = false,
           next = "<M-]>",
@@ -27,7 +27,7 @@ return {
       },
     })
 
-    -- Tab 映射逻辑（重点）
+    -- <Tab> sequence to accept suggestions 
     vim.keymap.set("i", "<Tab>", function()
       local suggestion = require("copilot.suggestion")
       if suggestion.is_visible() then
