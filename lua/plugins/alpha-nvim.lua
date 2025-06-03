@@ -1,89 +1,110 @@
 return {
-  {
     "goolord/alpha-nvim",
-    event = "VimEnter",
-    enabled = true,
+    dependencies = {
+  	  "nvim-tree/nvim-web-devicons",
+  	  "nvim-lua/plenary.nvim",
+    },
     config = function()
-      local dashboard_theme = require "alpha.themes.dashboard"
+  	  local dashboard = require("alpha.themes.dashboard")
 
-      -- Header Section
-      local logo = [[
- ██████   █████              ███                 
-░░██████ ░░███              ░░░                  
- ░███░███ ░███  █████ █████ ████  █████████████  
- ░███░░███░███ ░░███ ░░███ ░░███ ░░███░░███░░███ 
- ░███ ░░██████  ░███  ░███  ░███  ░███ ░███ ░███ 
- ░███  ░░█████  ░░███ ███   ░███  ░███ ░███ ░███ 
- █████  ░░█████  ░░█████    █████ █████░███ █████
-░░░░░    ░░░░░    ░░░░░    ░░░░░ ░░░░░ ░░░ ░░░░░ 
+  	  -- helper function for utf8 chars
+  	  local function getCharLen(s, pos)
+  		  local byte = string.byte(s, pos)
+  		  if not byte then
+  			  return nil
+  		  end
+  		  return (byte < 0x80 and 1) or (byte < 0xE0 and 2) or (byte < 0xF0 and 3) or (byte < 0xF8 and 4) or 1
+  	  end
 
-                              
-  ]]
+  	  local function applyColors(logo, colors, logoColors)
+  		  dashboard.section.header.val = logo
 
-      dashboard_theme.section.header.val = vim.split(logo, "\n")
-      dashboard_theme.section.header.opts.hl = "AlphaHeaderGreen"
-      vim.api.nvim_set_hl(0, "AlphaHeaderGreen", { fg = "#50fa7b", bold = true })
+  		  for key, color in pairs(colors) do
+  			  local name = "Alpha" .. key
+  			  vim.api.nvim_set_hl(0, name, color)
+  			  colors[key] = name
+  		  end
 
-      -- Buttons Section
-      dashboard_theme.section.buttons.val = {
-      dashboard_theme.button("<leader>ff", " Find Files", "<cmd>Telescope find_files<CR>"),
-      dashboard_theme.button("<leader>fg", " Live Grep", "<cmd>Telescope live_grep<CR>"),
-      dashboard_theme.button("<leader>fb", " Buffers", "<cmd>Telescope buffers<CR>"),
-      dashboard_theme.button("<leader>fh", " Help Tags", "<cmd>Telescope help_tags<CR>"),
-      dashboard_theme.button("n",          " New File", "<cmd>ene <BAR> startinsert<CR>"),
-      dashboard_theme.button("<leader>q",  " Quit", "<cmd>q<CR>"),
-      dashboard_theme.button("<leader>cn", " Config", "<cmd>edit $MYVIMRC<CR> | <cmd>cd " .. vim.fn.stdpath("config") .. "<CR>"),
+  		  dashboard.section.header.opts.hl = {}
+  		  for i, line in ipairs(logoColors) do
+  			  local highlights = {}
+  			  local pos = 0
+
+  			  for j = 1, #line do
+  				  local opos = pos
+  				  pos = pos + getCharLen(logo[i], opos + 1)
+
+  				  local color_name = colors[line:sub(j, j)]
+  				  if color_name then
+  					  table.insert(highlights, { color_name, opos, pos })
+  				  end
+  			  end
+
+  			  table.insert(dashboard.section.header.opts.hl, highlights)
+  		  end
+          -- 设置按钮
+     dashboard.section.buttons.val = {
+     dashboard.button("f", " Find Files", "<cmd>FzfLua files<CR>"),
+     dashboard.button("g", " Live Grep", "<cmd>FzfLua live_grep<CR>"),
+     dashboard.button("b", " Buffers", "<cmd>FzfLua buffers<CR>"),
+     dashboard.button("n", " New File", "<cmd>ene <BAR> startinsert<CR>"),
+     dashboard.button("q", " Quit", "<cmd>q<CR>"),
+     dashboard.button("c", " Config", "<cmd>edit $MYVIMRC<CR> | cd " .. vim.fn.stdpath("config")),
+}
+     dashboard.section.buttons.opts.hl = "AlphaButtons"
+
+      -- 设置 layout
+      dashboard.opts.layout = {
+        { type = "padding", val = 2 },
+        dashboard.section.header,
+        { type = "padding", val = 2 },
+        dashboard.section.buttons,
+        { type = "padding", val = 1 },
       }
- 
 
-      dashboard_theme.section.buttons.opts.hl = "AlphaButtons"
+  		  return dashboard.opts
+  	  end
 
-
-      -- Layout
-      dashboard_theme.opts.layout = {
-        { type = "padding", val = 4 }, -- Upper margin
-        dashboard_theme.section.header,
-        { type = "padding", val = 2 }, -- Space between logo and buttons
-        dashboard_theme.section.buttons,
-        { type = "padding", val = 1 }, -- Space between buttons and recent files
-        dashboard_theme.section.footer,
-      }
-
-      -- Lazy Loading
-      if vim.o.filetype == "lazy" then
-        vim.cmd.close()
-        vim.api.nvim_create_autocmd("User", {
-          once = true,
-          pattern = "AlphaReady",
-          callback = function()
-            require("lazy").show()
-          end,
-        })
-      end
-
-      -- Set the dashbaord
-      require("alpha").setup(dashboard_theme.opts)
-
-      -- Draw Footer After Startup
-      vim.api.nvim_create_autocmd("User", {
-        once = true,
-        pattern = "LazyVimStarted",
-        callback = function()
-          local stats = require("lazy").stats()
-          local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
-
-          -- Footer
-          dashboard_theme.section.footer.val = "⚡ Neovim loaded "
-            .. stats.loaded
-            .. "/"
-            .. stats.count
-            .. " plugins in "
-            .. ms
-            .. "ms"
-          pcall(vim.cmd.AlphaRedraw)
-          dashboard_theme.section.footer.opts.hl = "AlphaFooter"
-        end,
-      })
+  	  require("alpha").setup(applyColors({
+  		  [[  ███       ███  ]],
+  		  [[  ████      ████ ]],
+  		  [[  ████     █████ ]],
+  		  [[ █ ████    █████ ]],
+  		  [[ ██ ████   █████ ]],
+  		  [[ ███ ████  █████ ]],
+  		  [[ ████ ████ ████ ]],
+  		  [[ █████  ████████ ]],
+  		  [[ █████   ███████ ]],
+  		  [[ █████    ██████ ]],
+  		  [[ █████     █████ ]],
+  		  [[ ████      ████ ]],
+  		  [[  ███       ███  ]],
+  		  [[                    ]],
+  		  [[  N  E  O  V  I  M  ]],
+  	  }, {
+  		  ["b"] = { fg = "#3399ff", ctermfg = 33 },
+  		  ["a"] = { fg = "#53C670", ctermfg = 35 },
+  		  ["g"] = { fg = "#39ac56", ctermfg = 29 },
+  		  ["h"] = { fg = "#33994d", ctermfg = 23},
+  		  ["i"] = { fg = "#33994d", bg = "#39ac56", ctermfg = 23, ctermbg = 29},
+  		  ["j"] = { fg = "#53C670", bg = "#33994d", ctermfg = 35, ctermbg = 23 },
+  		  ["k"] = { fg = "#30A572", ctermfg = 36},
+  	  }, {
+  		  [[  kkkka       gggg  ]],
+  		  [[  kkkkaa      ggggg ]],
+  		  [[ b kkkaaa     ggggg ]],
+  		  [[ bb kkaaaa    ggggg ]],
+  		  [[ bbb kaaaaa   ggggg ]],
+  		  [[ bbbb aaaaaa  ggggg ]],
+  		  [[ bbbbb aaaaaa igggg ]],
+  		  [[ bbbbb  aaaaaahiggg ]],
+  		  [[ bbbbb   aaaaajhigg ]],
+  		  [[ bbbbb    aaaaajhig ]],
+  		  [[ bbbbb     aaaaajhi ]],
+  		  [[ bbbbb      aaaaajh ]],
+  		  [[  bbbb       aaaaa  ]],
+  		  [[                    ]],
+  		  [[  a  a  a  b  b  b  ]],
+  	  }))
     end,
-  },
 }

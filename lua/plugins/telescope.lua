@@ -3,7 +3,7 @@ return {
   'nvim-telescope/telescope.nvim',
   tag = '0.1.8',
   dependencies = { 'nvim-lua/plenary.nvim' },
-  cmd = "Telescope",  -- 使用 :Telescope 命令时才加载
+  event = "VeryLazy",
   keys = {
     { "<leader>ff", function() require("telescope.builtin").find_files() end, desc = "Find Files" },
     { "<leader>fg", function() require("telescope.builtin").live_grep() end,  desc = "Live Grep" },
