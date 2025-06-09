@@ -7,19 +7,46 @@ return {
     },
     opts = {},
     config = function(_, opts)
-        -- 初始化 mason
+        -- initialize  mason
         require("mason").setup(opts)
 
-        -- 设置 mason-lspconfig，自动安装 lua_ls
+        -- setup mason-lspconfig, install LSP
         require("mason-lspconfig").setup({
-            ensure_installed = { "lua_ls" },
+            ensure_installed = { "lua_ls", "pyright", "ts_ls", "html", "cssls", "clangd" },
             automatic_installation = true,
         })
 
-        -- 启用 lua_ls 语言服务器
-        require("lspconfig").lua_ls.setup({})
+        -- global `capabilities`，from cmp-nvim-lsp
+        local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-        -- 设置诊断显示样式
+        -- lua_ls
+        require("lspconfig").lua_ls.setup({
+            capabilities = capabilities,
+            settings = {
+              Lua = {
+                diagnostics = {
+                  globals = { "vim" }, -- recognize vim global variable REMAINS UNSOLVED
+                }
+              }
+            }
+        })
+
+        -- pyright
+        require("lspconfig").pyright.setup({
+            capabilities = capabilities,
+        })
+
+        -- typescript and javascript
+        require("lspconfig").ts_ls.setup({
+            capabilities = capabilities,
+        })
+
+        -- c and cpp
+        require("lspconfig").clangd.setup({
+            capabilities = capabilities,
+        })
+
+        -- show details
         vim.diagnostic.config({
             virtual_text = {
                 prefix = "",
