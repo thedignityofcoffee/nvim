@@ -27,6 +27,7 @@ return {
 	 { "<leader>bp", ":BufferLinePickPick<CR>", silent = true, desc = "Pick Buffer" },
 	 { "<leader>bc", ":BufferLinePickClose<CR>", silent = true, desc = "Close Buffer" },
 },
-lazy = false,
+lazy = true,
+event = "BufReadPost",
 }
 

@@ -12,3 +12,6 @@ require("core.defaults")
 
 -- Call the keymaps
 require("core.keymaps")
+
+-- call the markdown snippets
+require("core.markdown-keymaps")
