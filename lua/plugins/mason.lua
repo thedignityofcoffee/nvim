@@ -25,8 +25,12 @@ return {
             settings = {
               Lua = {
                 diagnostics = {
-                  globals = { "vim" }, -- recognize vim global variable REMAINS UNSOLVED
-                }
+                  globals = { "vim" } -- recognize vim global variable REMAINS UNSOLVED
+                };
+                workspace = {
+                  library = vim.api.nvim_get_runtime_file("", true), -- make the server aware of Neovim runtime files
+                  checkThirdParty = false, -- THIS LINE ADDED TO SUPPRESS THE PROMPTING MESSAGE
+                };
               }
             }
         })
